@@ -1,18 +1,15 @@
 <?php
-
-	date_default_timezone_set('America/Detroit');
-
+	
 	//The array to be filled with price data
     $dataArray = [];
     
-    //The types of materials used to craft
+    //The names of the variables for the types of materials used in crafting
     $types = ['mith', 'iron', 'plat',
     	'elder', 'soft', 'seasoned', 'hard',
     	'silk', 'wool', 'cotton', 'linen',
     	'marketIngot', 'marketPlank', 'marketBolt',
     	'ecto'];
-	
-    //If the request method is post, the values are updated accordingly
+
     if($_SERVER['REQUEST_METHOD'] == 'POST') 
     {
     	//Filling the price data array with the $_POST input values
@@ -36,7 +33,7 @@
     	//If the request method is not POST, all values are zeroed out
     	
     	//Filling the data array with 0s for the initial page load
-    	//The string keys are still required and must be assigned
+    	//The string keys are still required and must be used to assign values
     	foreach($types as $type)
     	{
     		$dataArray[$type] = 0;
@@ -50,32 +47,11 @@
     	//	}
     }
     
-    //Converting the ints into coin values
-    //Deldrimor Steel Ingot
-    $mithPrices = intToCoinArray($dataArray['mith']);
-    $ironPrices = intToCoinArray($dataArray['iron']);
-    $platPrices = intToCoinArray($dataArray['plat']);
-    
-    //Spiritwood Plank
-    $elderPrices =    intToCoinArray($dataArray['elder']);
-    $softPrices =     intToCoinArray($dataArray['soft']);
-    $seasonedPrices = intToCoinArray($dataArray['seasoned']);
-    $hardPrices =     intToCoinArray($dataArray['hard']);
-    
-    //Bolt of Damask
-    $silkPrices =   intToCoinArray($dataArray['silk']);
-    $woolPrices =   intToCoinArray($dataArray['wool']);
-    $cottonPrices = intToCoinArray($dataArray['cotton']);
-    $linenPrices =  intToCoinArray($dataArray['linen']);
-    
     //Market prices
     $marketIngotPrice = intToCoinArray($dataArray['marketIngot']);
     $marketPlankPrice = intToCoinArray($dataArray['marketPlank']);
     $marketBoltPrice =  intToCoinArray($dataArray['marketBolt']);
-    
-    //Misc prices
-    //$ectoPrices = intToCoinArray($dataArray['ecto']);
-    
+
     // ---- Show-Prices Calculations ---- {
     
     	
@@ -189,25 +165,17 @@
     	$boltTaxArray = intToCoinArray($boltTax);
     	$boltFeeArray = intToCoinArray($boltFee);
     	
+    	function getTaxArray($price) {
+    		$taxArray = intToCoinArray(round($price * 0.05));
+    		return $taxArray;
+    	}
+    	
     	// }
     
-    	// ---- PROFITS ---- {
-    	
-    	//Deldrimor Steel Ingot
-    	$ingotProfit = $ingot - $totalIngotCost - $ingotTax - $ingotFee;
-    	$ingotProfitArray = intToCoinArray($ingotProfit);
-    	
-    	//Spiritwood Plank
-    	$plankProfit = $plank - $totalPlankCost - $plankTax - $plankFee;
-    	$plankProfitArray = intToCoinArray($plankProfit);
-    	
-    	//Bolt of Damask
-    	$boltProfit = $bolt - $totalBoltCost - $boltTax - $boltFee;
-    	$boltProfitArray = intToCoinArray($boltProfit);
-    	
-    	//Total daily profit
-    	$totalDailyProfit = $ingotProfit + $plankProfit + $boltProfit;
-    	$totalDailyProfitArray = intToCoinArray($totalDailyProfit);
+    	//Profits
+    	$ingotProfitArray = calcProfits($ingot, $totalIngotCost, $ingotTax, $ingotFee);
+    	$plankProfitArray = calcProfits($plank, $totalPlankCost, $plankTax, $plankFee);
+    	$boltProfitArray = calcProfits($bolt, $totalBoltCost, $boltTax, $boltFee);
     	
     	//}
     		
@@ -234,6 +202,9 @@
         return $priceUnconverted;
     }
     
+    /*
+    //Unused
+    
     // Converts a three-value coin array to a friendly string for representation
     function coinArrayToString($coinArray) {
         return sprintf("%sg %ss %sc",
@@ -246,6 +217,7 @@
         $priceArray = intToCoinArray($price);
         return coinArrayToString($priceArray);
     }
+    */
     
     //Generates the sales tax based on the price of the item passed to it
     function getTax($price) {
@@ -257,6 +229,11 @@
     function getListFee($price) {
         $fee = round($price * 0.1);
         return $fee;
+    }
+    
+    function calcProfits($itemCost, $costToMake, $tax, $listingFee) {
+		$profitArray = intToCoinArray($itemCost - $costToMake - $tax - $listingFee);
+		return $profitArray;
     }
     
     //  }
@@ -626,27 +603,8 @@
 					</tbody>
 				</table>
 			</div>
-			
-			<div class="item" id="special">
-				<table>
-					<thead>
-						<tr>
-							<th colspan=4><h2>- Total Daily Profit -</h2></th>
-						</tr>
-					</thead>
-					
-					<tbody>
-						<tr>
-							<td><label for="profit"><span id="profit"><b>Profit:</b></span></label></td>
-							<td><?= $totalDailyProfitArray[0] ?><img src="resources/Gold_coin.ico" width="15" height="15"></td>
-							<td><?= $totalDailyProfitArray[1] ?><img src="resources/Silver_coin.ico" width="15" height="15"></td>
-							<td><?= $totalDailyProfitArray[2] ?><img src="resources/Copper_coin.ico" width="15" height="15"></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
 		</div>
-				
+		
         </div>
 			
 			<div class="footer">
